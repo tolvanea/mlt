@@ -20,6 +20,7 @@
 #include <QApplication>
 #include <QImageReader>
 #include <QLocale>
+#include <QImage>
 #include <QTransform>
 #include <cmath>
 
@@ -136,4 +137,29 @@ void enable_subpixel_translation(QTransform *transform)
             || transform->dy() != std::floor(transform->dy()))) {
         transform->scale(1.0 + 1e-9, 1.0 + 1e-9);
     }
+}
+
+void prescale_for_downscaling(QImage *image, QTransform *transform)
+{
+    // QPainter's SmoothPixmapTransform is plain bilinear interpolation: each
+    // output pixel only looks at the 2x2 nearest source pixels. When shrinking
+    // by more than ~2x most source pixels are skipped, and which ones are used
+    // depends on the sub-pixel position, so moving images shimmer, edges stick
+    // and jump, and the apparent size wobbles. Shrink with an area-averaging
+    // filter first (this step does not depend on the position, so it is stable
+    // during a pan) and leave only a ~1:1 residual for QPainter.
+    if (transform->type() >= QTransform::TxProject || image->isNull())
+        return;
+    double sx = std::hypot(transform->m11(), transform->m12());
+    double sy = std::hypot(transform->m21(), transform->m22());
+    if (sx >= 1.0 && sy >= 1.0)
+        return;
+    int w = qMax(1, (int) std::ceil(image->width() * qMin(sx, 1.0)));
+    int h = qMax(1, (int) std::ceil(image->height() * qMin(sy, 1.0)));
+    if (w == image->width() && h == image->height())
+        return;
+    QImage scaled = image->scaled(w, h, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    *transform = QTransform::fromScale(double(image->width()) / w, double(image->height()) / h)
+                 * *transform;
+    *image = scaled;
 }

@@ -36,5 +36,6 @@ int create_image(mlt_frame frame,
                  int *height,
                  int writable);
 void enable_subpixel_translation(QTransform *transform);
+void prescale_for_downscaling(QImage *image, QTransform *transform);
 
 #endif // COMMON_H

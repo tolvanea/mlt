@@ -233,6 +233,7 @@ static int filter_get_image(mlt_frame frame,
     painter.setCompositionMode(
         (QPainter::CompositionMode) mlt_properties_get_int(properties, "compositing"));
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    prescale_for_downscaling(&sourceImage, &transform);
     enable_subpixel_translation(&transform);
     painter.setTransform(transform);
     painter.setOpacity(opacity);

@@ -301,6 +301,7 @@ static int get_image(mlt_frame a_frame,
     painter.setCompositionMode(mode);
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, hqPainting);
     if (hqPainting) {
+        prescale_for_downscaling(&topImg, &transform);
         enable_subpixel_translation(&transform);
     }
     painter.setTransform(transform);
