@@ -300,6 +300,9 @@ static int get_image(mlt_frame a_frame,
     QPainter painter(&bottomImg);
     painter.setCompositionMode(mode);
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, hqPainting);
+    if (hqPainting) {
+        enable_subpixel_translation(&transform);
+    }
     painter.setTransform(transform);
     painter.setOpacity(opacity);
 

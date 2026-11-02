@@ -20,6 +20,8 @@
 #include <QApplication>
 #include <QImageReader>
 #include <QLocale>
+#include <QTransform>
+#include <cmath>
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
 #include <X11/Xlib.h>
@@ -120,4 +122,18 @@ int create_image(mlt_frame frame,
     mlt_frame_set_image(frame, *image, size, mlt_pool_release);
 
     return error;
+}
+
+void enable_subpixel_translation(QTransform *transform)
+{
+    // QPainter's raster engine treats a translation-only transform as a plain
+    // blit and rounds the offset to whole pixels, even when
+    // SmoothPixmapTransform is set. That makes slow pans step in 1px jumps.
+    // Adding a negligible scale makes Qt take its interpolating path, which
+    // honors fractional offsets (the size change is ~1e-6 px per 1000 px).
+    if (transform->type() == QTransform::TxTranslate
+        && (transform->dx() != std::floor(transform->dx())
+            || transform->dy() != std::floor(transform->dy()))) {
+        transform->scale(1.0 + 1e-9, 1.0 + 1e-9);
+    }
 }

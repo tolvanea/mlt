@@ -22,6 +22,7 @@
 #include <framework/mlt.h>
 
 class QImage;
+class QTransform;
 
 bool createQApplicationIfNeeded(mlt_service service);
 mlt_image_format choose_image_format(mlt_image_format format);
@@ -34,5 +35,6 @@ int create_image(mlt_frame frame,
                  int *width,
                  int *height,
                  int writable);
+void enable_subpixel_translation(QTransform *transform);
 
 #endif // COMMON_H
